@@ -160,7 +160,7 @@ class EDID:
 		self.product_id = raw_edid.prod_id
 		self.year = raw_edid.manu_year + 1990
 		self.edid_version = "%d.%d" % (raw_edid.edid_version, raw_edid.edid_revision)
-		if (raw_edid.input_type & 0x80):
+		if (raw_edid.input_type & 0b10000000):
 			self.type = "digital"
 			self.bit_depth = self._DIGITAL_BIT_DEPTHS[raw_edid.input_type & 0b01110000]
 			self.video_interface = self._DIGITAL_VIDEO_INTERFACES[raw_edid.input_type & 0b00001111]
@@ -235,7 +235,7 @@ class EDID:
 		for name in dir(self):
 			if not name.startswith("_"): # ignore "private" members
 				value = getattr(self, name)
-				if not callable(value):  # ignore callable items
+				if not callable(value): # ignore callable items
 					attributes.append("\t%s=%r" % (name, value))
 		return "%s(\n%s\n)" % (clsname, ", \n".join(attributes))
 
