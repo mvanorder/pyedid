@@ -78,7 +78,7 @@ class Edid:
 	}
 
 	_ASPECT_RATIOS = {
-		0b00: (16, 10),
+		0b00: (16, 10), # was 1:1 prior to EDID 1.3
 		0b01: ( 4,  3),
 		0b10: ( 5,  4),
 		0b11: (16,  9),
@@ -217,9 +217,9 @@ class Edid:
 	def get_edid(self):
 		ret = {}
 		for name in dir(self):
-			if not name.startswith("_"):
+			if not name.startswith("_"): # ignore "private" members
 				value = getattr(self, name)
-				if not callable(value):
+				if not callable(value): # ignore callable items
 					ret[name] = value
 		return ret
 
