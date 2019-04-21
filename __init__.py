@@ -12,28 +12,33 @@ PNP_IDS = {}
 with open(CSV_FILENAME, 'r') as file:
 	reader = csv.reader(file)
 	for line in reader:
-		PNP_IDS[ line[0] ] = line[1]
+		PNP_IDS[line[0]] = line[1]
 
-def manufacturer_from_raw(raw):
-	id = id_from_raw(raw)
-	return manufacturer_from_id(id)
+class EDID:
+	@staticmethod
+	def manufacturer_from_raw(raw):
+		id = EDID.id_from_raw(raw)
+		return EDID.manufacturer_from_id(id)
 
-def manufacturer_from_id(id):
-	return PNP_IDS.get(id, "Unknown")
+	@staticmethod
+	def manufacturer_from_id(id):
+		return PNP_IDS.get(id, "Unknown")
 
-def id_from_raw(raw):
-	tmp = [ (raw >> 10) & 31, (raw >> 5) & 31, raw & 31 ]
-	return "".join( string.ascii_uppercase[n-1] for n in tmp )
+	@staticmethod
+	def id_from_raw(raw):
+		tmp = [(raw >> 10) & 31, (raw >> 5) & 31, raw & 31]
+		return "".join(string.ascii_uppercase[n-1] for n in tmp)
 
-def hex2bytes(hex):
-	numbers = []
-	for i in range(0, len(hex), 2):
-		pair = hex[i:i+2]
-		numbers.append(int(pair, 16))
-	return bytes(numbers)
+	@staticmethod
+	def hex2bytes(hex):
+		numbers = []
+		for i in range(0, len(hex), 2):
+			pair = hex[i:i+2]
+			numbers.append(int(pair, 16))
+		return bytes(numbers)
 
-class Edid:
-	_STRUCT_FORMAT = (  ">"     # big-endian
+	_STRUCT_FORMAT = (
+						">"     # big-endian
 						"8s"    # constant header (8 bytes)
 						"H"     # manufacturer id (2 bytes)
 						"H"     # product id (2 bytes)
@@ -56,7 +61,8 @@ class Edid:
 						"18s"   # detailed timing block 3 (18 bytes)
 						"18s"   # detailed timing block 4 (18 bytes)
 						"B"     # extension flag (1 byte)
-						"B" )   # checksum (1 byte)
+						"B"     # checksum (1 byte)
+	)
 
 	_TIMINGS = {
 		0: {"width":1280, "height": 1024, "refresh_rate": 75.},
@@ -149,8 +155,8 @@ class Edid:
 			raise ValueError("Invalid header.")
 
 		self.raw = bytes
-		self.manufacturer = manufacturer_from_raw(raw_edid.manu_id)
-		self.manufacturer_id = id_from_raw(raw_edid.manu_id)
+		self.manufacturer = EDID.manufacturer_from_raw(raw_edid.manu_id)
+		self.manufacturer_id = EDID.id_from_raw(raw_edid.manu_id)
 		self.product_id = raw_edid.prod_id
 		self.year = raw_edid.manu_year + 1990
 		self.edid_version = "%d.%d" % (raw_edid.edid_version, raw_edid.edid_revision)
@@ -222,6 +228,16 @@ class Edid:
 				if not callable(value): # ignore callable items
 					ret[name] = value
 		return ret
+
+	def __repr__(self):
+		clsname = self.__class__.__name__
+		attributes = []
+		for name in dir(self):
+			if not name.startswith("_"): # ignore "private" members
+				value = getattr(self, name)
+				if not callable(value):  # ignore callable items
+					attributes.append("\t%s=%r" % (name, value))
+		return "%s(\n%s\n)" % (clsname, ", \n".join(attributes))
 
 if __name__=="__main__":
 	pass

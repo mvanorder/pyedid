@@ -5,13 +5,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyedid",
-    version="0.0.1",
-    author="Jonas Lieb",
-    author_email="author@example.com",
+    version="0.0.2",
+    author="Jonas Lieb, Jonathan Dean",
+    author_email="",
     description="Python library to parse extended display identification data (EDID)",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/jojonas/pyedid",
+    url="https://github.com/ke4ukz/pyedid",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
