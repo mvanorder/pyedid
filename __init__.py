@@ -1,8 +1,12 @@
+"""Decode EDID information
+"""
+
 import struct
 import subprocess
 from collections import namedtuple
 import csv
-import os, os.path
+import os
+import os.path
 import string
 
 DIR = os.path.dirname(os.path.abspath(__file__))
@@ -15,22 +19,32 @@ with open(CSV_FILENAME, 'r') as file:
         PNP_IDS[line[0]] = line[1]
 
 class EDID:
+    """Extended Display Identification Data
+    """
     @staticmethod
     def manufacturer_from_raw(raw):
+        """Get the manufacture from raw data
+        """
         id = EDID.id_from_raw(raw)
         return EDID.manufacturer_from_id(id)
 
     @staticmethod
     def manufacturer_from_id(id):
+        """Get the manufacture from the manufacture id
+        """
         return PNP_IDS.get(id, "Unknown")
 
     @staticmethod
     def id_from_raw(raw):
+        """Get the manufacture id from raw data
+        """
         tmp = [(raw >> 10) & 31, (raw >> 5) & 31, raw & 31]
         return "".join(string.ascii_uppercase[n-1] for n in tmp)
 
     @staticmethod
     def hex2bytes(hex):
+        """Convert string of hexidecimal to bytes
+        """
         numbers = []
         for i in range(0, len(hex), 2):
             pair = hex[i:i+2]
@@ -135,7 +149,14 @@ class EDID:
         0b01100000: "+0.700/-0.000 V"
     }
 
-    _RawEdid = namedtuple("RawEdid", ("header", "manu_id", "prod_id", "serial_no", "manu_week", "manu_year", "edid_version", "edid_revision", "input_type", "width", "height", "gamma", "features", "color", "timings_supported", "timings_reserved", "timings_edid", "timing_1", "timing_2", "timing_3", "timing_4", "extension", "checksum"))
+    _RawEdid = namedtuple(
+        "RawEdid", (
+            "header", "manu_id", "prod_id", "serial_no", "manu_week", "manu_year", "edid_version",
+            "edid_revision", "input_type", "width", "height", "gamma", "features", "color",
+            "timings_supported", "timings_reserved", "timings_edid", "timing_1", "timing_2",
+            "timing_3", "timing_4", "extension", "checksum"
+        )
+    )
 
     def __init__(self, bytes=None):
         if bytes is not None:
@@ -221,6 +242,8 @@ class EDID:
             self.serial = raw_edid.serial_no
 
     def get_edid(self):
+        """What does this do?
+        """
         ret = {}
         for name in dir(self):
             if not name.startswith("_"): # ignore "private" members
@@ -230,6 +253,8 @@ class EDID:
         return ret
 
     def __repr__(self):
+        """Representation of the object
+        """
         clsname = self.__class__.__name__
         attributes = []
         for name in dir(self):
