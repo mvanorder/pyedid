@@ -225,11 +225,12 @@ class EDID:
         self.name = None
         self.serial = None
 
-        for data_bytes in (raw_edid.timing_1, raw_edid.timing_2, raw_edid.timing_3, raw_edid.timing_4):
-            if data_bytes[0:2] == b'\x00\x00': # "other" descriptor
-                display_type = data_bytes[3]
+        for timing_bytes in (
+                raw_edid.timing_1, raw_edid.timing_2, raw_edid.timing_3, raw_edid.timing_4):
+            if timing_bytes[0:2] == b'\x00\x00': # "other" descriptor
+                display_type = timing_bytes[3]
                 if display_type in (0xFF, 0xFE, 0xFC):
-                    buffer = data_bytes[5:]
+                    buffer = timing_bytes[5:]
                     buffer = buffer.partition(b"\x0a")[0]
                     text = buffer.decode("cp437")
                     if display_type == 0xFF:
