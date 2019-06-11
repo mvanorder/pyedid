@@ -85,9 +85,9 @@ class EDID:
 
     _ASPECT_RATIOS = {
         0b00: (16, 10), # was 1:1 prior to EDID 1.3
-        0b01: ( 4,  3),
-        0b10: ( 5,  4),
-        0b11: (16,  9),
+        0b01: (4, 3),
+        0b10: (5, 4),
+        0b11: (16, 9),
     }
 
     _DIGITAL_BIT_DEPTHS = {
@@ -177,9 +177,9 @@ class EDID:
         self.width = float(raw_edid.width)
         self.height = float(raw_edid.height)
         self.gamma = (raw_edid.gamma + 100) / 100
-        self.dpms_standby = bool( raw_edid.features & 0b10000000 )
-        self.dpms_suspend = bool( raw_edid.features & 0b01000000 )
-        self.dpms_activeoff = bool( raw_edid.features & 0b00100000 )
+        self.dpms_standby = bool(raw_edid.features & 0b10000000)
+        self.dpms_suspend = bool(raw_edid.features & 0b01000000)
+        self.dpms_activeoff = bool(raw_edid.features & 0b00100000)
 
         self.resolutions = []
         for i in range(16):
@@ -193,13 +193,13 @@ class EDID:
                 continue
             byte1, byte2 = bytes
             x_res = 8*(int(byte1)+31)
-            aspect_ratio = self._ASPECT_RATIOS[ (byte2>>6) & 0b11 ]
+            aspect_ratio = self._ASPECT_RATIOS[(byte2>>6) & 0b11]
             y_res = int(x_res * aspect_ratio[1]/aspect_ratio[0])
             rate = (int(byte2) & 0b00111111) + 60.0
             self.resolutions.append({
-                    "width": x_res,
-                    "height": y_res,
-                    "refresh_rate": rate
+                "width": x_res,
+                "height": y_res,
+                "refresh_rate": rate
             })
 
         self.name = None
@@ -239,5 +239,5 @@ class EDID:
                     attributes.append("\t%s=%r" % (name, value))
         return "%s(\n%s\n)" % (clsname, ", \n".join(attributes))
 
-if __name__=="__main__":
+if __name__ == "__main__":
     pass
