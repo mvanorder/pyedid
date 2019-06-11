@@ -14,8 +14,7 @@ CSV_FILENAME = os.path.join(DIR, 'pnp_ids.csv')
 PNP_IDS = {}
 
 with open(CSV_FILENAME, 'r') as file:
-    reader = csv.reader(file)
-    for line in reader:
+    for line in csv.reader(file):
         PNP_IDS[line[0]] = line[1]
 
 class EDID:
