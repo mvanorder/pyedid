@@ -25,14 +25,14 @@ class EDID:
     def manufacturer_from_raw(raw):
         """Get the manufacture from raw data
         """
-        id = EDID.id_from_raw(raw)
-        return EDID.manufacturer_from_id(id)
+        mfg_id = EDID.id_from_raw(raw)
+        return EDID.manufacturer_from_id(mfg_id)
 
     @staticmethod
-    def manufacturer_from_id(id):
+    def manufacturer_from_id(mfg_id):
         """Get the manufacture from the manufacture id
         """
-        return PNP_IDS.get(id, "Unknown")
+        return PNP_IDS.get(mfg_id, "Unknown")
 
     @staticmethod
     def id_from_raw(raw):
@@ -42,12 +42,12 @@ class EDID:
         return "".join(string.ascii_uppercase[n-1] for n in tmp)
 
     @staticmethod
-    def hex2bytes(hex):
+    def hex2bytes(hex_str):
         """Convert string of hexidecimal to bytes
         """
         numbers = []
-        for i in range(0, len(hex), 2):
-            pair = hex[i:i+2]
+        for i in range(0, len(hex_str), 2):
+            pair = hex_str[i:i+2]
             numbers.append(int(pair, 16))
         return bytes(numbers)
 
@@ -158,24 +158,24 @@ class EDID:
         )
     )
 
-    def __init__(self, bytes=None):
-        if bytes is not None:
-            self._parse_edid(bytes)
+    def __init__(self, data_bytes=None):
+        if data_bytes is not None:
+            self._parse_edid(data_bytes)
 
-    def _parse_edid(self, bytes):
+    def _parse_edid(self, data_bytes):
         if struct.calcsize(self._STRUCT_FORMAT) != 128:
             raise ValueError("Wrong edid size.")
 
-        if sum(map(int, bytes)) % 256 != 0:
+        if sum(map(int, data_bytes)) % 256 != 0:
             raise ValueError("Checksum mismatch.")
 
-        tuple = struct.unpack(self._STRUCT_FORMAT, bytes)
-        raw_edid = self._RawEdid(*tuple)
+        bytes_tuple = struct.unpack(self._STRUCT_FORMAT, data_bytes)
+        raw_edid = self._RawEdid(*bytes_tuple)
 
         if raw_edid.header != b'\x00\xff\xff\xff\xff\xff\xff\x00':
             raise ValueError("Invalid header.")
 
-        self.raw = bytes
+        self.raw = data_bytes
         self.manufacturer = EDID.manufacturer_from_raw(raw_edid.manu_id)
         self.manufacturer_id = EDID.id_from_raw(raw_edid.manu_id)
         self.product_id = raw_edid.prod_id
@@ -209,10 +209,10 @@ class EDID:
                 self.resolutions.append(self._TIMINGS[16-i])
 
         for i in range(8):
-            bytes = raw_edid.timings_edid[2*i:2*i+2]
-            if bytes == b'\x01\x01':
+            data_bytes = raw_edid.timings_edid[2*i:2*i+2]
+            if data_bytes == b'\x01\x01':
                 continue
-            byte1, byte2 = bytes
+            byte1, byte2 = data_bytes
             x_res = 8*(int(byte1)+31)
             aspect_ratio = self._ASPECT_RATIOS[(byte2>>6) & 0b11]
             y_res = int(x_res * aspect_ratio[1]/aspect_ratio[0])
@@ -226,16 +226,16 @@ class EDID:
         self.name = None
         self.serial = None
 
-        for bytes in (raw_edid.timing_1, raw_edid.timing_2, raw_edid.timing_3, raw_edid.timing_4):
-            if bytes[0:2] == b'\x00\x00': # "other" descriptor
-                type = bytes[3]
-                if type in (0xFF, 0xFE, 0xFC):
-                    buffer = bytes[5:]
+        for data_bytes in (raw_edid.timing_1, raw_edid.timing_2, raw_edid.timing_3, raw_edid.timing_4):
+            if data_bytes[0:2] == b'\x00\x00': # "other" descriptor
+                display_type = data_bytes[3]
+                if display_type in (0xFF, 0xFE, 0xFC):
+                    buffer = data_bytes[5:]
                     buffer = buffer.partition(b"\x0a")[0]
                     text = buffer.decode("cp437")
-                    if type == 0xFF:
+                    if display_type == 0xFF:
                         self.serial = text
-                    elif type == 0xFC:
+                    elif display_type == 0xFC:
                         self.name = text
 
         if not self.serial:
